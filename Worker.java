@@ -19,9 +19,6 @@ public class Worker extends Thread {
 
 
     public void run(){
-        /*divido l'immagine in NUM_THREADS strisce verticali dividendo image.width per NUM_THREAD. ogni thread si prende una striscia.
-        * nel caso di divisioni con resto l'ultimo thread si prende la striscia più il resto
-        * */
 
         int ik,jk,kernelIndex,dataIndex;
 
@@ -40,13 +37,6 @@ public class Worker extends Thread {
                         ik = ((i - this.kernelSize / 2 + ii) < 0) ? 0 : ((i - this.kernelSize / 2 + ii) > this.image.height - 1) ? this.image.height - 1 : i - this.kernelSize / 2 + ii;
                         for (int jj = 0; jj < this.kernelSize; jj++) {
 
-                            /* devo aggiustare le condizioni tenendo di conto che l'indice, se non esce dai bordi dell'immagine
-                               deve poter "guardare all'indietro" nelle striscia del thread precedente per poter effettuare
-                               corretamente la convoluzione. Le condizioni sono aggiustate con widthOffset*this.id
-                               in questo modo tutti i thread tranne lo zero potranno avere indice jk negativo, in modo da poter tornare
-                               indietro alla striscia precedente, mentre il thread 0 avrà fissato l'indice a 0, per l'estensione
-                               dei bordi prevista
-                            */
                             jk = ((j - this.kernelSize / 2 + jj + widthOffset*this.id) < 0) ? 0 : ((j - this.kernelSize / 2 + jj + widthOffset*this.id) > this.image.width - 1) ? this.image.width - 1 - widthOffset*this.id : j - this.kernelSize / 2 + jj;
 
                             dataIndex = (ik * this.image.width + jk + widthOffset*this.id) * this.image.channels + c;
