@@ -28,12 +28,12 @@ public class Worker extends Thread {
         float sum=0,currentPixel;
 
         /* larghezza "comune" a tutti i thread, usata per scorrere correttamente alla giusta striscia dell'immagine */
-        int widthCommon = (this.image.width / numThreads);
+        int widthOffset = (this.image.width / numThreads);
         /* larghezza specifica del thread, diversa per l'ultimo thread che avrà l'eccedenza nel caso di divisione con resto */
-        int widthThread = (this.id == numThreads-1)? (this.image.width / numThreads) + (this.image.width % numThreads) : (this.image.width / numThreads);
+        int sliceWidth = (this.id == numThreads-1)? (this.image.width / numThreads) + (this.image.width % numThreads) : (this.image.width / numThreads);
 
         for(int i = 0; i < this.image.height; i++) {
-            for (int j = 0; j < widthThread; j++) {
+            for (int j = 0; j < sliceWidth; j++) {
                 for (int c = 0; c < this.image.channels; c++) {
 
                     for (int ii = 0; ii < this.kernelSize; ii++) {
@@ -42,14 +42,14 @@ public class Worker extends Thread {
 
                             /* devo aggiustare le condizioni tenendo di conto che l'indice, se non esce dai bordi dell'immagine
                                deve poter "guardare all'indietro" nelle striscia del thread precedente per poter effettuare
-                               corretamente la convoluzione. Le condizioni sono aggiustate con widthCommon*this.id
+                               corretamente la convoluzione. Le condizioni sono aggiustate con widthOffset*this.id
                                in questo modo tutti i thread tranne lo zero potranno avere indice jk negativo, in modo da poter tornare
                                indietro alla striscia precedente, mentre il thread 0 avrà fissato l'indice a 0, per l'estensione
                                dei bordi prevista
                             */
-                            jk = ((j - this.kernelSize / 2 + jj + widthCommon*this.id) < 0) ? 0 : ((j - this.kernelSize / 2 + jj + widthCommon*this.id) > this.image.width - 1) ? this.image.width - 1 - widthCommon*this.id : j - this.kernelSize / 2 + jj;
+                            jk = ((j - this.kernelSize / 2 + jj + widthOffset*this.id) < 0) ? 0 : ((j - this.kernelSize / 2 + jj + widthOffset*this.id) > this.image.width - 1) ? this.image.width - 1 - widthOffset*this.id : j - this.kernelSize / 2 + jj;
 
-                            dataIndex = (ik * this.image.width + jk + widthCommon*this.id) * this.image.channels + c;
+                            dataIndex = (ik * this.image.width + jk + widthOffset*this.id) * this.image.channels + c;
                             currentPixel = this.image.data[dataIndex];
 
                             kernelIndex = (this.kernelSize - 1 - ii) * this.kernelSize + (this.kernelSize - 1 - jj);
@@ -58,7 +58,7 @@ public class Worker extends Thread {
                         }
 
                     }
-                    output.data[(i* this.image.width + j + widthCommon*this.id)* this.image.channels + c] = sum;
+                    output.data[(i* this.image.width + j + widthOffset*this.id)* this.image.channels + c] = sum;
                     sum = 0;
                 }
 
